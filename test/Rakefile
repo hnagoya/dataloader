@@ -8,7 +8,7 @@ require '../sfdc_dataloader'
 java = "#{`which java`.chomp} -Dfile.encoding=UTF-8"
 jar = '/var/local/lib/dataloader-41.0.0-uber.jar' # must ASCII only path string
 c = SFDCDataLoader.new(java, jar)
-y = YAML.load_file('./secret.yml')
+y = YAML.load_file('./secret.yml') # Not included in this repo.
 c.sfdc_endpoint = y['endpoint']
 c.sfdc_username = y['username']
 c.sfdc_password = y['password']
@@ -98,14 +98,14 @@ namespace :test do
                      })
     c.save_conf_process_xml_file
     open('./insert.csv', 'w:UTF-8') do |o|
-      [['name', 'account_number'],
-       ['James T. Kirk',     'ac-000'],
-       ['Spock Vulcan',      'ac-001'],
-       ['Dr. Leonard McCoy', 'ac-002'],
-       ['Montgomery Scott',  'ac-003'],
-       ['Nyota Uhura',       'ac-004'],
-       ['Hikaru Sulu',       'ac-005'],
-       ['織田 信長',         'ac-006'], # Japanese Character String
+      [['name', 'account_number', 'location'],
+       ['James T. Kirk',     'ac-000', 'SPACE'],
+       ['Spock Vulcan',      'ac-001', 'SPACE'],
+       ['Dr. Leonard McCoy', 'ac-002', 'SPACE'],
+       ['Montgomery Scott',  'ac-003', 'SPACE'],
+       ['Nyota Uhura',       'ac-004', 'SPACE'],
+       ['Hikaru Sulu',       'ac-005', 'SPACE'],
+       ['織田 信長',         'ac-006', 'SPACE'], # Japanese Character String
       ].each do |v|
         o.print v.to_csv
       end
@@ -113,6 +113,7 @@ namespace :test do
     open(c.conf_map_file, 'w:UTF-8') do |o|
       o.puts 'name=Name'
       o.puts 'account_number=AccountNumber'
+      o.puts 'location=BillingState'
     end
     cmd = c.process_cmd('p03')
     cmd += ' 2>&1 |tee log.txt'
@@ -134,25 +135,20 @@ namespace :test do
                        'dataAccess.name' => './upsert.csv',
                        'dataAccess.type' => 'csvRead',
                        'process.outputSuccess' => './upsert_result.csv',
-                       'sfdc.debugMessages' => 'true',
+                       'sfdc.debugMessages' => 'false',
                      })
     c.save_conf_process_xml_file
     open('./upsert.csv', 'w:UTF-8') do |o|
-      [['name', 'account_number'],
-       ['James T. Kirk [UPDATE]',     'ac-000'],
-       ['Spock Vulcan [UPDATE]',      'ac-001'],
-       ['Dr. Leonard McCoy [UPDATE]', 'ac-002'],
-       ['Montgomery Scott [UPDATE]',  'ac-003'],
-       ['Nyota Uhura [UPDATE]',       'ac-004'],
-       ['Hikaru Sulu [UPDATE]',       'ac-005'],
-       ['織田 信長 [UPDATE]',         'ac-006'], # Japanese Character String
-      ].each do |v|
-        o.print v.to_csv
+      o.print %w[Id update_name].to_csv
+      CSV.foreach('./insert_result.csv', encoding: 'UTF-8', headers: :first_row) do |r|
+        i = r['ID']
+        n = '[UPDATE] ' + r['NAME']
+        o.print [i, n].to_csv
       end
     end
     open(c.conf_map_file, 'w:UTF-8') do |o|
-      o.puts 'name=Name'
-      o.puts 'account_number=AccountNumber'
+      o.puts 'Id=Id'
+      o.puts 'update_name=Name'
     end
     cmd = c.process_cmd('p04')
     cmd += ' 2>&1 |tee log.txt'

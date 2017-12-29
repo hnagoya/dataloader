@@ -45,16 +45,18 @@ namespace :test do
     c.bean_id = 'p01'
     c.bean_description = 'do p01'
     c.property_name = 'p01'
-    c.entries['process.name'] = 'p01'
-    c.save_conf_process_xml_file('process.mappingFile' => nil,
-                                 'sfdc.entity' => 'User',
-                                 'process.operation' =>  'extract',
-                                 'sfdc.extractionSOQL' => 'select Id, Name from User',
-                                 'dataAccess.name' => 'extract_User.csv',
-                                 'dataAccess.type' => 'csvWrite',
-                                 'process.enableExtractStatusOutput' => 'false',
-                                 'sfdc.debugMessages' => 'true',
-                                 )
+    c.overwrite_entries = {
+      'process.name' => 'p01',
+      'process.mappingFile' => nil,
+      'sfdc.entity' => 'User',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name from User',
+      'dataAccess.name' => 'extract_User.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
   end
 
   desc 'process test 02 extract'
@@ -64,17 +66,18 @@ namespace :test do
     c.bean_id = 'p02'
     c.bean_description = 'do p02 extract'
     c.property_name = 'p02'
-    c.entries.merge!({
-                       'process.name' => 'p02',
-                       'sfdc.entity' => 'Account',
-                       'process.operation' =>  'extract',
-                       'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
-                       'dataAccess.name' => 'extract_Account.csv',
-                       'dataAccess.type' => 'csvWrite',
-                       'process.enableExtractStatusOutput' => 'false',
-                       'sfdc.debugMessages' => 'true',
-                     })
-    c.save_conf_process_xml_file('process.mappingFile' => nil)
+    c.overwrite_entries = {
+      'process.name' => 'p02',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
+      'dataAccess.name' => 'extract_Account.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.mappingFile' => nil,
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'false',
+    }
+    c.save_conf_process_xml_file
     cmd = c.process_cmd('p02')
     cmd += ' 2>&1 |tee log.txt'
     sh cmd
@@ -87,15 +90,15 @@ namespace :test do
     c.bean_id = 'p03'
     c.bean_description = 'do p03 insert'
     c.property_name = 'p03'
-    c.entries.merge!({
-                       'process.name' => 'p03',
-                       'sfdc.entity' => 'Account',
-                       'process.operation' =>  'insert',
-                       'dataAccess.name' => './insert.csv',
-                       'dataAccess.type' => 'csvRead',
-                       'process.outputSuccess' => './insert_result.csv',
-                       'sfdc.debugMessages' => 'true',
-                     })
+    c.overwrite_entries = {
+      'process.name' => 'p03',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'insert',
+      'dataAccess.name' => './insert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './insert_result.csv',
+      'sfdc.debugMessages' => 'true',
+    }
     c.save_conf_process_xml_file
     open('./insert.csv', 'w:UTF-8') do |o|
       [['name', 'account_number', 'location'],
@@ -127,16 +130,16 @@ namespace :test do
     c.bean_id = 'p04'
     c.bean_description = 'do p04 upsert'
     c.property_name = 'p04'
-    c.entries.merge!({
-                       'process.name' => 'p04',
-                       'sfdc.entity' => 'Account',
-                       'sfdc.externalIdField' => 'Id',
-                       'process.operation' =>  'upsert',
-                       'dataAccess.name' => './upsert.csv',
-                       'dataAccess.type' => 'csvRead',
-                       'process.outputSuccess' => './upsert_result.csv',
-                       'sfdc.debugMessages' => 'false',
-                     })
+    c.overwrite_entries = {
+      'process.name' => 'p04',
+      'sfdc.entity' => 'Account',
+      'sfdc.externalIdField' => 'Id',
+      'process.operation' =>  'upsert',
+      'dataAccess.name' => './upsert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './upsert_result.csv',
+      'sfdc.debugMessages' => 'false',
+    }
     c.save_conf_process_xml_file
     open('./upsert.csv', 'w:UTF-8') do |o|
       o.print %w[Id update_name].to_csv
@@ -162,14 +165,14 @@ namespace :test do
     c.bean_id = 'p05'
     c.bean_description = 'do p05 delete'
     c.property_name = 'p05'
-    c.entries.merge!({
-                       'process.name' => 'p05',
-                       'sfdc.entity' => 'Account',
-                       'process.operation' =>  'delete',
-                       'dataAccess.name' => './insert_result.csv',
-                       'dataAccess.type' => 'csvRead',
-                       'sfdc.debugMessages' => 'true',
-                     })
+    c.overwrite_entries = {
+      'process.name' => 'p05',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'delete',
+      'dataAccess.name' => './insert_result.csv',
+      'dataAccess.type' => 'csvRead',
+      'sfdc.debugMessages' => 'true',
+    }
     c.save_conf_process_xml_file
     open(c.conf_map_file, 'w:UTF-8') do |o|
       o.puts 'ID=Id'

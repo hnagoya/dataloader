@@ -22,6 +22,7 @@ class SFDCDataLoader
   attr_accessor :bean_description
   attr_accessor :property_name
   attr_accessor :entries
+  attr_accessor :overwrite_entries
 
   # authentication data
   attr_accessor :sfdc_endpoint # ex. test.salesforce.com
@@ -34,7 +35,6 @@ class SFDCDataLoader
     j = "#{java} -cp #{jar}"
     @encrypt = "#{j} com.salesforce.dataloader.security.EncryptionUtil"
     @process = "#{j} -Dsalesforce.config.dir=%s com.salesforce.dataloader.process.ProcessRunner process.name=%s"
-    @entries = DEFAULT_ENTRIES
   end
 
   # Original: dataloader/bin/encrypt.sh
@@ -68,16 +68,16 @@ class SFDCDataLoader
   end
 
   # Save conf xml file
-  def save_conf_process_xml_file(overwrite_entries = {})
+  def save_conf_process_xml_file
     @conf_process_xml_file.tap do |f|
       open(f, 'w:UTF-8') do |o|
-        o.print conf_process_xml(overwrite_entries)
+        o.print conf_process_xml
       end
     end
   end
 
   # Generate XML config
-  def conf_process_xml(overwrite_entries = {})
+  def conf_process_xml
     encrypt_password = encrypt("-e '#{@sfdc_password}' '#{@conf_key_file}'")
     es = {
       'sfdc.endpoint' => @sfdc_endpoint,
@@ -88,8 +88,8 @@ class SFDCDataLoader
       'process.statusOutputDirectory' => @conf_dir,
       'process.mappingFile' => @conf_map_file,
     }
-    @entries.merge!(es)
-    @entries.merge!(overwrite_entries)
+    @entries = DEFAULT_ENTRIES.merge!(es)
+    @entries.merge!(@overwrite_entries) if @overwrite_entries
     entries_xml = @entries
       .select{|k, v| v}
       .map{|k, v| '        <entry key="%s" value="%s"/>' % [k, v]}

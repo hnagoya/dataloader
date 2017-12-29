@@ -21,11 +21,10 @@ class SFDCDataLoader
   attr_accessor :bean_id
   attr_accessor :bean_description
   attr_accessor :property_name
-  attr_accessor :entries
   attr_accessor :overwrite_entries
 
   # authentication data
-  attr_accessor :sfdc_endpoint # ex. test.salesforce.com
+  attr_accessor :sfdc_endpoint # ex. https://test.salesforce.com
   attr_accessor :sfdc_username # ex. foo@example.com
   attr_accessor :sfdc_password # ex. 0123456789
 
@@ -78,8 +77,22 @@ class SFDCDataLoader
 
   # Generate XML config
   def conf_process_xml
+    entries = BASE_ENTRIES.merge(default_overwrite_entries)
+    entries.merge!(@overwrite_entries) if @overwrite_entries
+    entries_xml = entries
+      .select{|k, v| v}
+      .map{|k, v| '        <entry key="%s" value="%s"/>' % [k, v]}
+      .join("\n")
+    PROCESS_XML_TEMPLATE % [@bean_id,
+                            @bean_descrption,
+                            @property_name,
+                            entries_xml]
+  end
+
+  #
+  def default_overwrite_entries
     encrypt_password = encrypt("-e '#{@sfdc_password}' '#{@conf_key_file}'")
-    es = {
+    {
       'sfdc.endpoint' => @sfdc_endpoint,
       'sfdc.username' => @sfdc_username,
       'sfdc.password' => encrypt_password,
@@ -88,16 +101,6 @@ class SFDCDataLoader
       'process.statusOutputDirectory' => @conf_dir,
       'process.mappingFile' => @conf_map_file,
     }
-    @entries = DEFAULT_ENTRIES.merge!(es)
-    @entries.merge!(@overwrite_entries) if @overwrite_entries
-    entries_xml = @entries
-      .select{|k, v| v}
-      .map{|k, v| '        <entry key="%s" value="%s"/>' % [k, v]}
-      .join("\n")
-    PROCESS_XML_TEMPLATE % [@bean_id,
-                            @bean_descrption,
-                            @property_name,
-                            entries_xml]
   end
 
   PROCESS_XML_TEMPLATE = <<'XML'
@@ -118,7 +121,7 @@ class SFDCDataLoader
 XML
 
   # see https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
-  DEFAULT_ENTRIES = {
+  BASE_ENTRIES = {
     'dataAccess.readUTF8'               => 'true',
     'dataAccess.writeUTF8'              => 'true',
     'dataAccess.name'                   => nil,

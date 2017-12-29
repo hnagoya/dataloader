@@ -1,0 +1,197 @@
+# -*- coding: utf-8 -*-
+require 'pathname'
+require 'csv'
+require 'yaml'
+require 'pp'
+require '../sfdc_dataloader'
+
+java = "#{`which java`.chomp} -Dfile.encoding=UTF-8"
+jar = '/var/local/lib/dataloader-41.0.0-uber.jar' # must ASCII only path string
+c = SFDCDataLoader.new(java, jar)
+y = YAML.load_file('./secret.yml')
+c.sfdc_endpoint = y['endpoint']
+c.sfdc_username = y['username']
+c.sfdc_password = y['password']
+c.conf_dir = '.'
+
+namespace :test do
+  desc 'encrypt test 01'
+  task :e01 do
+    k = c.encrypt('-g 0123456789')
+    f = './key.txt'
+    open(f, 'w:UTF-8') do |o|
+      o.puts k
+    end
+    p1 = 'abcde!f$g%h#i?jklmn'
+    p2 = c.encrypt("-e '#{p1}' #{f}")
+    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    pp [p1, p2, p3]
+  end
+
+  desc 'ecnrypt test 02'
+  task :e02 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    p1 = 'abcde!f$g%h#i?jklmn'
+    p2 = c.encrypt("-e '#{p1}' #{f}")
+    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    pp [p1, p2, p3]
+  end
+
+  desc 'process test 01'
+  task :p01 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p01'
+    c.bean_description = 'do p01'
+    c.property_name = 'p01'
+    c.entries['process.name'] = 'p01'
+    c.save_conf_process_xml_file('process.mappingFile' => nil,
+                                 'sfdc.entity' => 'User',
+                                 'process.operation' =>  'extract',
+                                 'sfdc.extractionSOQL' => 'select Id, Name from User',
+                                 'dataAccess.name' => 'extract_User.csv',
+                                 'dataAccess.type' => 'csvWrite',
+                                 'process.enableExtractStatusOutput' => 'false',
+                                 'sfdc.debugMessages' => 'true',
+                                 )
+  end
+
+  desc 'process test 02 extract'
+  task :p02 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p02'
+    c.bean_description = 'do p02 extract'
+    c.property_name = 'p02'
+    c.entries.merge!({
+                       'process.name' => 'p02',
+                       'sfdc.entity' => 'Account',
+                       'process.operation' =>  'extract',
+                       'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
+                       'dataAccess.name' => 'extract_Account.csv',
+                       'dataAccess.type' => 'csvWrite',
+                       'process.enableExtractStatusOutput' => 'false',
+                       'sfdc.debugMessages' => 'true',
+                     })
+    c.save_conf_process_xml_file('process.mappingFile' => nil)
+    cmd = c.process_cmd('p02')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 03 insert'
+  task :p03 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p03'
+    c.bean_description = 'do p03 insert'
+    c.property_name = 'p03'
+    c.entries.merge!({
+                       'process.name' => 'p03',
+                       'sfdc.entity' => 'Account',
+                       'process.operation' =>  'insert',
+                       'dataAccess.name' => './insert.csv',
+                       'dataAccess.type' => 'csvRead',
+                       'process.outputSuccess' => './insert_result.csv',
+                       'sfdc.debugMessages' => 'true',
+                     })
+    c.save_conf_process_xml_file
+    open('./insert.csv', 'w:UTF-8') do |o|
+      [['name', 'account_number'],
+       ['James T. Kirk',     'ac-000'],
+       ['Spock Vulcan',      'ac-001'],
+       ['Dr. Leonard McCoy', 'ac-002'],
+       ['Montgomery Scott',  'ac-003'],
+       ['Nyota Uhura',       'ac-004'],
+       ['Hikaru Sulu',       'ac-005'],
+       ['織田 信長',         'ac-006'], # Japanese Character String
+      ].each do |v|
+        o.print v.to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'name=Name'
+      o.puts 'account_number=AccountNumber'
+    end
+    cmd = c.process_cmd('p03')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 04 upsert'
+  task :p04 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p04'
+    c.bean_description = 'do p04 upsert'
+    c.property_name = 'p04'
+    c.entries.merge!({
+                       'process.name' => 'p04',
+                       'sfdc.entity' => 'Account',
+                       'sfdc.externalIdField' => 'Id',
+                       'process.operation' =>  'upsert',
+                       'dataAccess.name' => './upsert.csv',
+                       'dataAccess.type' => 'csvRead',
+                       'process.outputSuccess' => './upsert_result.csv',
+                       'sfdc.debugMessages' => 'true',
+                     })
+    c.save_conf_process_xml_file
+    open('./upsert.csv', 'w:UTF-8') do |o|
+      [['name', 'account_number'],
+       ['James T. Kirk [UPDATE]',     'ac-000'],
+       ['Spock Vulcan [UPDATE]',      'ac-001'],
+       ['Dr. Leonard McCoy [UPDATE]', 'ac-002'],
+       ['Montgomery Scott [UPDATE]',  'ac-003'],
+       ['Nyota Uhura [UPDATE]',       'ac-004'],
+       ['Hikaru Sulu [UPDATE]',       'ac-005'],
+       ['織田 信長 [UPDATE]',         'ac-006'], # Japanese Character String
+      ].each do |v|
+        o.print v.to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'name=Name'
+      o.puts 'account_number=AccountNumber'
+    end
+    cmd = c.process_cmd('p04')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 05 delete'
+  task :p05 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p05'
+    c.bean_description = 'do p05 delete'
+    c.property_name = 'p05'
+    c.entries.merge!({
+                       'process.name' => 'p05',
+                       'sfdc.entity' => 'Account',
+                       'process.operation' =>  'delete',
+                       'dataAccess.name' => './insert_result.csv',
+                       'dataAccess.type' => 'csvRead',
+                       'sfdc.debugMessages' => 'true',
+                     })
+    c.save_conf_process_xml_file
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'ID=Id'
+    end
+    cmd = c.process_cmd('p05')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'clean'
+  task :clean do
+    fs = ['Rakefile',
+          'secret.yml',
+          'secret_sample.yml',
+         ]
+    Pathname('.').children.each do |f|
+      next if fs.include?(f.basename.to_s)
+      f.unlink
+    end
+  end
+end

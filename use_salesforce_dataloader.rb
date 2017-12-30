@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-class UseSFDCDataLoader
+class UseSalesforceDataLoader
 
   # file layout:
   # conf_dir/key.txt

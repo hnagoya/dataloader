@@ -1,4 +1,4 @@
-sfdc_dataloader_rb
+use_sfdc_dataloader.rb
 ==========
 
 Force.com Apex Data Loader for Ruby/Linux - command line version
@@ -18,13 +18,13 @@ The open source version of dataloader is available from: https://github.com/forc
 
 1. Clone this project 
   ```
-  $ git clone https://github.com/hnagoya/sfdc_dataloader_rb
+  $ git clone https://github.com/hnagoya/use_sfdc_dataloader
   ```
-2. Copy the `sfdc_dataloader.rb` to somewhere.
+2. Copy the `use_sfdc_dataloader.rb` to somewhere.
 2. Copy the dataloader-41.0.0-uber.jar file to somewhere.
 3. Use your ruby script
   ```
-  require './sfdc_dataloader'
+  require './use_sfdc_dataloader'
   ```
 4. Usecase samples are `Rakefile` into `./test` directory.
 

@@ -3,11 +3,11 @@ require 'pathname'
 require 'csv'
 require 'yaml'
 require 'pp'
-require '../sfdc_dataloader'
+require '../use_sfdc_dataloader'
 
 java = "#{`which java`.chomp} -Dfile.encoding=UTF-8"
 jar = '/var/local/lib/dataloader-41.0.0-uber.jar' # must ASCII only path string
-c = SFDCDataLoader.new(java, jar)
+c = UseSFDCDataLoader.new(java, jar)
 y = YAML.load_file('./secret.yml') # Not included in this repo.
 c.sfdc_endpoint = y['endpoint']
 c.sfdc_username = y['username']
@@ -181,16 +181,14 @@ namespace :test do
     cmd += ' 2>&1 |tee log.txt'
     sh cmd
   end
+end
 
-  desc 'clean'
-  task :clean do
-    fs = ['Rakefile',
-          'secret.yml',
-          'secret_sample.yml',
-         ]
-    Pathname('.').children.each do |f|
-      next if fs.include?(f.basename.to_s)
-      f.unlink
-    end
+desc 'clean'
+task :clean do
+  Pathname('.')
+    .children
+    .select{|f| /\A(?:Rakefile|secret.*\.yml)\z/ !~ f.basename.to_s}
+    .each do |f|
+    f.unlink
   end
 end

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-class SFDCDataLoader
+class UseSFDCDataLoader
 
   # file layout:
   # conf_dir/key.txt

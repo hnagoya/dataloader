@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+require 'open3'
 
 # see https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
 class UseSalesforceDataLoader
 
-  # file layout:
+  # File layout:
   # conf_dir/key.txt
   # conf_dir/process-conf.xml
   # conf_dir/map.sdl
@@ -18,21 +19,22 @@ class UseSalesforceDataLoader
     @conf_map_file = @conf_dir + '/map.sdl'
   end
 
-  # 
+  # process-conf.xml
   attr_accessor :bean_id
   attr_accessor :bean_description
   attr_accessor :property_name
   attr_accessor :overwrite_entries
 
-  # salesforce.com authentication data
-  attr_accessor :endpoint      # ex. https://test.salesforce.com
-  attr_accessor :username      # ex. foo@example.com
-  attr_accessor :password      # ex. 0123456789
+  # Salesforce.com authentication data
+  attr_accessor :endpoint # ex. https://test.salesforce.com
+  attr_accessor :username # ex. foo@example.com
+  attr_accessor :password # ex. 0123456789
 
+  # jar:      path of dataloader-NN.N.N-uber.jar, ex. "/usr/lib/dataloader-41.0.0-uber.jar"
   # java:     command line of java runtime, ex. "/usr/bin/java"
   # java_opt: ex.  "-Dfile.encoding=UTF-8"
-  # jar:      path of dataloader-NN.N.N-uber.jar, ex. "/usr/lib/dataloader-41.0.0-uber.jar"
-  def initialize(jar, java, java_opt = nil)
+  def initialize(jar, java = nil, java_opt = nil)
+    java = exec_command('which java') unless java
     path_check(java)
     path_check(jar)
     j = [java, java_opt, '-cp', jar].compact.join(' ')
@@ -50,7 +52,7 @@ class UseSalesforceDataLoader
   #
   def encrypt(args)
     cmd = "#{@encrypt} #{args} | sed 's/^.*) \- //g'"
-    `#{cmd}`.chomp
+    exec_command(cmd)
   end
 
   # Original: dataloader/bin/process.sh
@@ -58,7 +60,6 @@ class UseSalesforceDataLoader
   #
   def process_cmd(name)
     path_check(@conf_dir)
-    path_check(@conf_key_file)
     path_check(@conf_process_xml_file)
     @process % [@conf_dir, name]
   end
@@ -95,8 +96,11 @@ class UseSalesforceDataLoader
                             entries_xml]
   end
 
+  private
+
   # internal use
   def default_overwrite_entries
+    path_check(@conf_key_file)
     encrypt_password = encrypt("-e '#{@password}' '#{@conf_key_file}'")
     {
       'sfdc.endpoint' => @endpoint,
@@ -117,6 +121,13 @@ class UseSalesforceDataLoader
   # internal use
   def path_check(f)
     raise "Path not found: #{f}" unless File.exist?(f)
+  end
+
+  # internal use
+  def exec_command(cmd)
+    o, e, s = Open3.capture3(cmd)
+    raise "Something wrong" unless e.empty? and s.success?
+    o.chomp
   end
 
   PROCESS_XML_TEMPLATE = <<'PROCESS_XML'

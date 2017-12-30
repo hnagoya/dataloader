@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+# see https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
 class UseSalesforceDataLoader
 
   # file layout:
   # conf_dir/key.txt
   # conf_dir/process-conf.xml
   # conf_dir/map.sdl
-  attr_reader :conf_dir
-  attr_accessor :conf_key_file 
+  attr_accessor :conf_dir
+  attr_accessor :conf_key_file
   attr_accessor :conf_process_xml_file
   attr_accessor :conf_map_file
   def conf_dir=(path)
@@ -17,21 +18,24 @@ class UseSalesforceDataLoader
     @conf_map_file = @conf_dir + '/map.sdl'
   end
 
-  # see https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
+  # 
   attr_accessor :bean_id
   attr_accessor :bean_description
   attr_accessor :property_name
   attr_accessor :overwrite_entries
 
-  # authentication data
-  attr_accessor :sfdc_endpoint # ex. https://test.salesforce.com
-  attr_accessor :sfdc_username # ex. foo@example.com
-  attr_accessor :sfdc_password # ex. 0123456789
+  # salesforce.com authentication data
+  attr_accessor :endpoint      # ex. https://test.salesforce.com
+  attr_accessor :username      # ex. foo@example.com
+  attr_accessor :password      # ex. 0123456789
 
-  # java command line of java runtime, ex. "/usr/bin/java -Dfile.encoding=UTF-8"
-  # jar  path of dataloader-NN.N.N-uber.jar, ex. "/usr/lib/dataloader-41.0.0-uber.jar"
-  def initialize(java, jar)
-    j = "#{java} -cp #{jar}"
+  # java:     command line of java runtime, ex. "/usr/bin/java"
+  # java_opt: ex.  "-Dfile.encoding=UTF-8"
+  # jar:      path of dataloader-NN.N.N-uber.jar, ex. "/usr/lib/dataloader-41.0.0-uber.jar"
+  def initialize(jar, java, java_opt = nil)
+    path_check(java)
+    path_check(jar)
+    j = [java, java_opt, '-cp', jar].compact.join(' ')
     @encrypt = "#{j} com.salesforce.dataloader.security.EncryptionUtil"
     @process = "#{j} -Dsalesforce.config.dir=%s com.salesforce.dataloader.process.ProcessRunner process.name=%s"
   end
@@ -52,15 +56,17 @@ class UseSalesforceDataLoader
   # Original: dataloader/bin/process.sh
   # Usage: dataloader/bin/process.sh [conf-dir] <process-name>
   #
-  def process_cmd(name, dir = @conf_dir)
-    @process % [dir, name]
+  def process_cmd(name)
+    path_check(@conf_dir)
+    path_check(@conf_key_file)
+    path_check(@conf_process_xml_file)
+    @process % [@conf_dir, name]
   end
 
   # Save encrypt key file
   def save_conf_key_file
     @conf_key_file.tap do |f|
       open(f, 'w:UTF-8') do |o|
-        text_seed = rand(0xffff_ffff).to_s(16)
         o.print encrypt("-g #{text_seed}")
       end
     end
@@ -81,7 +87,7 @@ class UseSalesforceDataLoader
     entries.merge!(@overwrite_entries) if @overwrite_entries
     entries_xml = entries
       .select{|k, v| v}
-      .map{|k, v| '        <entry key="%s" value="%s"/>' % [k, v]}
+      .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v]}
       .join("\n")
     PROCESS_XML_TEMPLATE % [@bean_id,
                             @bean_descrption,
@@ -89,12 +95,12 @@ class UseSalesforceDataLoader
                             entries_xml]
   end
 
-  #
+  # internal use
   def default_overwrite_entries
-    encrypt_password = encrypt("-e '#{@sfdc_password}' '#{@conf_key_file}'")
+    encrypt_password = encrypt("-e '#{@password}' '#{@conf_key_file}'")
     {
-      'sfdc.endpoint' => @sfdc_endpoint,
-      'sfdc.username' => @sfdc_username,
+      'sfdc.endpoint' => @endpoint,
+      'sfdc.username' => @username,
       'sfdc.password' => encrypt_password,
       'process.encryptionKeyFile' => @conf_key_file,
       'process.lastRunOutputDirectory' => @conf_dir,
@@ -103,7 +109,17 @@ class UseSalesforceDataLoader
     }
   end
 
-  PROCESS_XML_TEMPLATE = <<'XML'
+  # interal use
+  def text_seed
+    rand(0xffff_ffff).to_s(16)
+  end
+
+  # internal use
+  def path_check(f)
+    raise "Path not found: #{f}" unless File.exist?(f)
+  end
+
+  PROCESS_XML_TEMPLATE = <<'PROCESS_XML'
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
   <bean id="%s"
@@ -118,9 +134,12 @@ class UseSalesforceDataLoader
     </property>
   </bean>
 </beans>
-XML
+PROCESS_XML
 
-  # see https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
+  ENTRIES_XML_TEMPLATE = <<'ENTRIES_XML'
+        <entry key="%s" value="%s"/>
+ENTRIES_XML
+          
   BASE_ENTRIES = {
     'dataAccess.readUTF8'               => 'true',
     'dataAccess.writeUTF8'              => 'true',

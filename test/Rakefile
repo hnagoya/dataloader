@@ -5,13 +5,14 @@ require 'yaml'
 require 'pp'
 require '../use_salesforce_dataloader'
 
-java = "#{`which java`.chomp} -Dfile.encoding=UTF-8"
+java = "#{`which java`.chomp}"
+java_opt = '-Dfile.encoding=UTF-8'
 jar = '/var/local/lib/dataloader-41.0.0-uber.jar' # must ASCII only path string
-c = UseSalesforceDataLoader.new(java, jar)
+c = UseSalesforceDataLoader.new(jar, java, java_opt)
 y = YAML.load_file('./secret.yml') # Not included in this repo.
-c.sfdc_endpoint = y['endpoint']
-c.sfdc_username = y['username']
-c.sfdc_password = y['password']
+c.endpoint = y['endpoint']
+c.username = y['username']
+c.password = y['password']
 c.conf_dir = '.'
 
 namespace :test do

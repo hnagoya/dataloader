@@ -3,7 +3,7 @@ require 'pathname'
 require 'csv'
 require 'yaml'
 require 'pp'
-require '../use_salesforce_dataloader'
+require '../lib/use_salesforce_dataloader'
 
 java = "#{`which java`.chomp}"
 java_opt = '-Dfile.encoding=UTF-8'

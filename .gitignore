@@ -1,3 +1,4 @@
+*.gem
 test/*
 !test/Rakefile
 !test/secret_sample.yml

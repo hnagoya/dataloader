@@ -16,20 +16,24 @@ The "Data Loader Guide" is available from: https://developer.salesforce.com/docs
 2. DataLoader JAR file from Windows or built from the open source project. 
 (The current name/version of the jar file is: `dataloader-41.0.0-uber.jar`)
 
-## Steps: 
+## Steps (use rubygems.org): 
+
+1. See https://rubygems.org/gems/use_salesforce_dataloader
+
+## Steps (do not use rubygems.org): 
 
 1. Clone this project 
   ```
   $ git clone https://github.com/hnagoya/use_salesforce_dataloader
   ```
 
-2. Copy the `use_salesforce_dataloader.rb` to somewhere.
+2. Copy the `lib/use_salesforce_dataloader.rb` to somewhere.
 
 3. Copy the `dataloader-41.0.0-uber.jar` file to somewhere.
 
 4. Use your ruby script
   ```
-  require './use_salesforce_dataloader'
+  require './lib/use_salesforce_dataloader'
   ```
 
 5. Usecase samples are `Rakefile` into `./test` directory.

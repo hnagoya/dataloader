@@ -165,7 +165,7 @@ dataloader..overwrite_entries = {
   'process.name' => 'p05',
   'sfdc.entity' => 'Account',
   'process.operation' =>  'delete',
-  'dataAccess.name' => './insert_result.csv',
+  'dataAccess.name' => './delete.csv',
   'dataAccess.type' => 'csvRead',
   'sfdc.debugMessages' => 'true',
 }

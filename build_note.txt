@@ -1,0 +1,9 @@
+1. Edit/test code, include git commit(s).
+2. Fixed gem version number, ex. `a.b.c`
+3. Update gemspec file <`*.gemspec`> ( `s.version = 'a.b.c'` )
+4. `$ git commit ...`
+5. `$ git tag a.b.c`
+6. `$ git push --tags` (to github repo)
+7. `$ gem build <*.gemspec>`
+8. `$ gem push <*-a.b.c.gem>` (to rubygem repo)
+9. `$ mv <*-a.b.c.gem> tmp/` (optional)

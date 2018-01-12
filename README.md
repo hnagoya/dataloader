@@ -14,7 +14,7 @@ The "Data Loader Guide" is available from: https://developer.salesforce.com/docs
 1. Java 8+
 
 2. DataLoader JAR file from Windows or built from the open source project. 
-(The current name/version of the jar file is: `dataloader-41.0.0-uber.jar`)
+The current name/version of the jar file is: `dataloader-41.0.0-uber.jar`, included in this repo.
 
 ## Steps (use rubygems.org): 
 

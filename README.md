@@ -13,10 +13,13 @@ The current name/version of the jar file is: `dataloader-41.0.0-uber.jar`, inclu
 # Usage (example)
 
 ## Install
-- `$ gem install use_salesforce_dataloader`
-- Put the `dataloader-41.0.0-uber.jar` file to somewhere.
+
+`$ gem install use_salesforce_dataloader`
+
+Put the `dataloader-41.0.0-uber.jar` file to somewhere.
 
 ## Setup
+
 ```
 require `use_salesforce_dataloader`
 
@@ -28,8 +31,10 @@ dataloader.conf_dir = '/tmp/hoge'
 ```
 
 ## Extract
-- Extract to `/tmp/hoge/extract_Account.csv`.
-- Ruby code are:
+
+Extract to `/tmp/hoge/extract_Account.csv`.
+
+Ruby code are:
 ```
 dataloader.save_conf_key_file
 dataloader.bean_id = 'p02'
@@ -51,8 +56,10 @@ system dataloader.process_cmd('p02')
 ```
 
 ## Insert
-- Insert records from `insert.csv'.
-- `$ cat insert.csv`
+
+Insert records from `insert.csv`.
+
+`$ cat insert.csv`
 ```
 name,account_numberlocation
 James T. Kirk,ac-000,SPACE
@@ -62,13 +69,15 @@ Montgomery Scott,ac-003,SPACE
 Nyota Uhura,ac-004,SPACE
 Hikaru Sulu,ac-005,SPACE
 ```
-- `$ cat `map.sdl`
+
+`$ cat map.sdl`
 ```
 name=Name
 account_number=AccountNumber
 location=BillingState
 ```
-- Ruby code are:
+
+Ruby code are:
 ```
 dataloader.save_conf_key_file
 dataloader.bean_id = 'p03'
@@ -88,8 +97,9 @@ system dataloader.process_cmd('p03')
 ```
 
 ## Upsert
-- Upsert records from `upsert.csv'.
-- `$ cat upsert.csv`
+Upsert records from `upsert.csv`.
+
+`$ cat upsert.csv`
 ```
 id,update_name
 0018000000OTQcyAAH,James T. Kirk
@@ -99,12 +109,14 @@ id,update_name
 0018000000OTQcvAAH,Nyota Uhura
 0018000000OTQd5AAH,Hikaru Sulu
 ```
-- `$ cat `map.sdl`
+
+`$ cat map.sdl`
 ```
 id=Id
 update_name=Name
 ```
-- Ruby code are:
+
+Ruby code are:
 ```
 dataloader.save_conf_key_file
 dataloader.bean_id = 'p04'
@@ -125,8 +137,9 @@ system dataloader.process_cmd('p04')
 ```
 
 ### Delete
-- Delete records from `delete.csv'.
-- `$ cat delete.csv`
+Delete records from `delete.csv`.
+
+`$ cat delete.csv`
 ```
 id
 0018000000OTQcyAAH
@@ -136,11 +149,13 @@ id
 0018000000OTQcvAAH
 0018000000OTQd5AAH
 ```
-- `$ cat `map.sdl`
+
+`$ cat map.sdl`
 ```
 id=Id
 ```
-- Ruby code are:
+
+Ruby code are:
 ```
 dataloader.save_conf_key_file
 dataloader.bean_id = 'p05'

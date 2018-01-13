@@ -8,28 +8,29 @@ Force.com Apex Data Loader for Ruby/Linux - command line version
 1. Java 8+
 
 2. DataLoader JAR file from Windows or built from the open source project. 
-The current name/version of the jar file is: `dataloader-41.0.0-uber.jar`, included in this repo.
+The current name/version of the jar file is `dataloader-41.0.0-uber.jar`, which included in this repo.
 
 # Usage (example)
 
 ## Install
 
-`$ gem install use_salesforce_dataloader`
+1. `$ gem install use_salesforce_dataloader`
 
-Put the `dataloader-41.0.0-uber.jar` file to somewhere.
+2. Put the `dataloader-41.0.0-uber.jar` file to somewhere.
 
 ## Setup
 
 Ruby code are:
 ```
-require `use_salesforce_dataloader`
+require 'use_salesforce_dataloader'lo
 
-dataloader = UseSalesforceDataLoader.new('/opt/dataloader-41.0.0-uber.jar')
-dataloader.endpoint = 'https://login.salesforce.com'
-dataloader.username = 'foo@example.com'
-dataloader.password = '123456789'
-dataloader.conf_dir = '/tmp/hoge'
-dataloader.save_conf_key_file # create /tmp/hoge/key.txt
+jar = '/opt/dataloader-41.0.0-uber.jar'              # Depends on your local environment.
+dataloader = UseSalesforceDataLoader.new(jar)
+dataloader.endpoint = 'https://login.salesforce.com' # Depends on your salesforce environment. 
+dataloader.username = 'foo@example.com'              # Depends on your salesforce environment.
+dataloader.password = '123456789'                    # Depends on your salesforce environment.
+dataloader.conf_dir = '/tmp/hoge'                    # Depends on your local environment.
+dataloader.save_conf_key_file                        # Create /tmp/hoge/key.txt
 ```
 
 ## Extract
@@ -44,7 +45,7 @@ dataloader.property_name = 'p02'
 dataloader.overwrite_entries = {
   'process.name' => 'p02',
   'sfdc.entity' => 'Account',
-  'process.operation' =>  'extract',
+  'process.operation' => 'extract',
   'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
   'dataAccess.name' => 'extract_Account.csv',
   'dataAccess.type' => 'csvWrite',
@@ -52,8 +53,8 @@ dataloader.overwrite_entries = {
   'process.enableExtractStatusOutput' => 'false',
   'sfdc.debugMessages' => 'false',
 }
-dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
-system dataloader.process_cmd('p02')  # run dataloader
+dataloader.save_conf_process_xml_file # Create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p02')  # Run dataloader
 ```
 
 ## Insert
@@ -86,14 +87,14 @@ dataloader.property_name = 'p03'
 dataloader..overwrite_entries = {
   'process.name' => 'p03',
   'sfdc.entity' => 'Account',
-  'process.operation' =>  'insert',
+  'process.operation' => 'insert',
   'dataAccess.name' => './insert.csv',
   'dataAccess.type' => 'csvRead',
   'process.outputSuccess' => './insert_result.csv',
   'sfdc.debugMessages' => 'true',
 }
-dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
-system dataloader.process_cmd('p03')  # run dataloader
+dataloader.save_conf_process_xml_file # Create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p03')  # Run dataloader
 ```
 
 ## Upsert
@@ -126,14 +127,14 @@ dataloader..overwrite_entries = {
   'process.name' => 'p04',
   'sfdc.entity' => 'Account',
   'sfdc.externalIdField' => 'Id',
-  'process.operation' =>  'upsert',
+  'process.operation' => 'upsert',
   'dataAccess.name' => './upsert.csv',
   'dataAccess.type' => 'csvRead',
   'process.outputSuccess' => './upsert_result.csv',
   'sfdc.debugMessages' => 'false',
 }
-dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
-system dataloader.process_cmd('p04')  # run dataloader
+dataloader.save_conf_process_xml_file # Create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p04')  # Run dataloader
 ```
 
 ### Delete
@@ -164,13 +165,13 @@ dataloader.property_name = 'p05'
 dataloader..overwrite_entries = {
   'process.name' => 'p05',
   'sfdc.entity' => 'Account',
-  'process.operation' =>  'delete',
+  'process.operation' => 'delete',
   'dataAccess.name' => './delete.csv',
   'dataAccess.type' => 'csvRead',
   'sfdc.debugMessages' => 'true',
 }
-dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
-system dataloader.process_cmd('p05')  # run dataloader
+dataloader.save_conf_process_xml_file # Create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p05')  # Run dataloader
 ```
 
 # Links

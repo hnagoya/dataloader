@@ -20,6 +20,7 @@ Put the `dataloader-41.0.0-uber.jar` file to somewhere.
 
 ## Setup
 
+Ruby code are:
 ```
 require `use_salesforce_dataloader`
 
@@ -38,7 +39,7 @@ Extract to `/tmp/hoge/extract_Account.csv`.
 Ruby code are:
 ```
 dataloader.bean_id = 'p02'
-dataloader.bean_description = 'do p02 extract'
+dataloader.bean_description = 'Do p02 extract'
 dataloader.property_name = 'p02'
 dataloader.overwrite_entries = {
   'process.name' => 'p02',
@@ -80,7 +81,7 @@ location=BillingState
 Ruby code are:
 ```
 dataloader.bean_id = 'p03'
-dataloader.bean_description = 'do p03 insert'
+dataloader.bean_description = 'Do p03 insert'
 dataloader.property_name = 'p03'
 dataloader..overwrite_entries = {
   'process.name' => 'p03',
@@ -96,6 +97,7 @@ system dataloader.process_cmd('p03')  # run dataloader
 ```
 
 ## Upsert
+
 Upsert records from `upsert.csv`.
 
 `$ cat upsert.csv`
@@ -118,7 +120,7 @@ update_name=Name
 Ruby code are:
 ```
 dataloader.bean_id = 'p04'
-dataloader.bean_description = 'do p04 upsert'
+dataloader.bean_description = 'Do p04 upsert'
 dataloader.property_name = 'p04'
 dataloader..overwrite_entries = {
   'process.name' => 'p04',
@@ -135,6 +137,7 @@ system dataloader.process_cmd('p04')  # run dataloader
 ```
 
 ### Delete
+
 Delete records from `delete.csv`.
 
 `$ cat delete.csv`
@@ -156,7 +159,7 @@ id=Id
 Ruby code are:
 ```
 dataloader.bean_id = 'p05'
-dataloader.bean_description = 'do p05 delete'
+dataloader.bean_description = 'Do p05 delete'
 dataloader.property_name = 'p05'
 dataloader..overwrite_entries = {
   'process.name' => 'p05',

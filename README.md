@@ -63,7 +63,7 @@ Insert records from `insert.csv`.
 
 `$ cat insert.csv`
 ```text
-name,account_numberlocation
+name,account_number,location
 James T. Kirk,ac-000,SPACE
 Spock Vulcan,ac-001,SPACE
 Dr. Leonard McCoy,ac-002,SPACE

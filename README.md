@@ -84,7 +84,7 @@ Ruby code are:
 dataloader.bean_id = 'p03'
 dataloader.bean_description = 'Do p03 insert'
 dataloader.property_name = 'p03'
-dataloader..overwrite_entries = {
+dataloader.overwrite_entries = {
   'process.name' => 'p03',
   'sfdc.entity' => 'Account',
   'process.operation' => 'insert',
@@ -123,7 +123,7 @@ Ruby code are:
 dataloader.bean_id = 'p04'
 dataloader.bean_description = 'Do p04 upsert'
 dataloader.property_name = 'p04'
-dataloader..overwrite_entries = {
+dataloader.overwrite_entries = {
   'process.name' => 'p04',
   'sfdc.entity' => 'Account',
   'sfdc.externalIdField' => 'Id',
@@ -162,7 +162,7 @@ Ruby code are:
 dataloader.bean_id = 'p05'
 dataloader.bean_description = 'Do p05 delete'
 dataloader.property_name = 'p05'
-dataloader..overwrite_entries = {
+dataloader.overwrite_entries = {
   'process.name' => 'p05',
   'sfdc.entity' => 'Account',
   'process.operation' => 'delete',

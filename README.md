@@ -21,8 +21,8 @@ The current name/version of the jar file is `dataloader-41.0.0-uber.jar`, which 
 ## Setup
 
 Ruby code are:
-```
-require 'use_salesforce_dataloader'lo
+```ruby
+require 'use_salesforce_dataloader'
 
 jar = '/opt/dataloader-41.0.0-uber.jar'              # Depends on your local environment.
 dataloader = UseSalesforceDataLoader.new(jar)
@@ -38,7 +38,7 @@ dataloader.save_conf_key_file                        # Create /tmp/hoge/key.txt
 Extract to `/tmp/hoge/extract_Account.csv`.
 
 Ruby code are:
-```
+```ruby
 dataloader.bean_id = 'p02'
 dataloader.bean_description = 'Do p02 extract'
 dataloader.property_name = 'p02'
@@ -62,7 +62,7 @@ system dataloader.process_cmd('p02')  # Run dataloader
 Insert records from `insert.csv`.
 
 `$ cat insert.csv`
-```
+```text
 name,account_numberlocation
 James T. Kirk,ac-000,SPACE
 Spock Vulcan,ac-001,SPACE
@@ -73,14 +73,14 @@ Hikaru Sulu,ac-005,SPACE
 ```
 
 `$ cat map.sdl`
-```
+```text
 name=Name
 account_number=AccountNumber
 location=BillingState
 ```
 
 Ruby code are:
-```
+```ruby
 dataloader.bean_id = 'p03'
 dataloader.bean_description = 'Do p03 insert'
 dataloader.property_name = 'p03'
@@ -102,7 +102,7 @@ system dataloader.process_cmd('p03')  # Run dataloader
 Upsert records from `upsert.csv`.
 
 `$ cat upsert.csv`
-```
+```text
 id,update_name
 0018000000OTQcyAAH,James T. Kirk
 0018000000OTQcuAAH,Spock Vulcan
@@ -113,13 +113,13 @@ id,update_name
 ```
 
 `$ cat map.sdl`
-```
+```text
 id=Id
 update_name=Name
 ```
 
 Ruby code are:
-```
+```ruby
 dataloader.bean_id = 'p04'
 dataloader.bean_description = 'Do p04 upsert'
 dataloader.property_name = 'p04'
@@ -142,7 +142,7 @@ system dataloader.process_cmd('p04')  # Run dataloader
 Delete records from `delete.csv`.
 
 `$ cat delete.csv`
-```
+```text
 id
 0018000000OTQcyAAH
 0018000000OTQcuAAH
@@ -153,12 +153,12 @@ id
 ```
 
 `$ cat map.sdl`
-```
+```text
 id=Id
 ```
 
 Ruby code are:
-```
+```ruby
 dataloader.bean_id = 'p05'
 dataloader.bean_description = 'Do p05 delete'
 dataloader.property_name = 'p05'

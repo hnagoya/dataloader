@@ -3,7 +3,7 @@ use_salesforce_dataloader.rb
 
 Force.com Apex Data Loader for Ruby/Linux - command line version
 
-# Requirements: 
+# Requirements
 
 1. Java 8+
 

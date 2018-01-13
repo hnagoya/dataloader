@@ -28,6 +28,7 @@ dataloader.endpoint = 'https://login.salesforce.com'
 dataloader.username = 'foo@example.com'
 dataloader.password = '123456789'
 dataloader.conf_dir = '/tmp/hoge'
+dataloader.save_conf_key_file # create /tmp/hoge/key.txt
 ```
 
 ## Extract
@@ -36,7 +37,6 @@ Extract to `/tmp/hoge/extract_Account.csv`.
 
 Ruby code are:
 ```
-dataloader.save_conf_key_file
 dataloader.bean_id = 'p02'
 dataloader.bean_description = 'do p02 extract'
 dataloader.property_name = 'p02'
@@ -51,8 +51,8 @@ dataloader.overwrite_entries = {
   'process.enableExtractStatusOutput' => 'false',
   'sfdc.debugMessages' => 'false',
 }
-dataloader.save_conf_process_xml_file
-system dataloader.process_cmd('p02')
+dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p02')  # run dataloader
 ```
 
 ## Insert
@@ -79,7 +79,6 @@ location=BillingState
 
 Ruby code are:
 ```
-dataloader.save_conf_key_file
 dataloader.bean_id = 'p03'
 dataloader.bean_description = 'do p03 insert'
 dataloader.property_name = 'p03'
@@ -92,8 +91,8 @@ dataloader..overwrite_entries = {
   'process.outputSuccess' => './insert_result.csv',
   'sfdc.debugMessages' => 'true',
 }
-dataloader.save_conf_process_xml_file
-system dataloader.process_cmd('p03')
+dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p03')  # run dataloader
 ```
 
 ## Upsert
@@ -118,7 +117,6 @@ update_name=Name
 
 Ruby code are:
 ```
-dataloader.save_conf_key_file
 dataloader.bean_id = 'p04'
 dataloader.bean_description = 'do p04 upsert'
 dataloader.property_name = 'p04'
@@ -132,8 +130,8 @@ dataloader..overwrite_entries = {
   'process.outputSuccess' => './upsert_result.csv',
   'sfdc.debugMessages' => 'false',
 }
-dataloader.save_conf_process_xml_file
-system dataloader.process_cmd('p04')
+dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p04')  # run dataloader
 ```
 
 ### Delete
@@ -157,7 +155,6 @@ id=Id
 
 Ruby code are:
 ```
-dataloader.save_conf_key_file
 dataloader.bean_id = 'p05'
 dataloader.bean_description = 'do p05 delete'
 dataloader.property_name = 'p05'
@@ -169,8 +166,8 @@ dataloader..overwrite_entries = {
   'dataAccess.type' => 'csvRead',
   'sfdc.debugMessages' => 'true',
 }
-dataloader.save_conf_process_xml_file
-system dataloader.process_cmd('p05')
+dataloader.save_conf_process_xml_file # create /tmp/hoge/process-conf.xml
+system dataloader.process_cmd('p05')  # run dataloader
 ```
 
 # Links

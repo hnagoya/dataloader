@@ -89,7 +89,8 @@ class UseSalesforceDataLoader
     entries_xml = entries
       .select{|k, v| v}
       .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v]}
-      .join("\n")
+      .join
+      .chomp
     PROCESS_XML_TEMPLATE % [@bean_id,
                             @bean_descrption,
                             @property_name,
@@ -183,7 +184,7 @@ ENTRIES_XML
     'sfdc.externalIdField'              => nil,
     'sfdc.extractionRequestSize'        => nil,
     'sfdc.extractionSOQL'               => nil,
-    'sfdc.insertNulls'                  => nil,
+    'sfdc.insertNulls'                  => 'true',
     'sfdc.loadBatchSize'                => nil,
     'sfdc.maxRetries'                   => nil,
     'sfdc.minRetrySleepSecs'            => nil,

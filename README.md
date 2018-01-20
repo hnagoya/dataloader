@@ -137,7 +137,7 @@ dataloader.save_conf_process_xml_file # Create /tmp/hoge/process-conf.xml
 system dataloader.process_cmd('p04')  # Run dataloader
 ```
 
-### Delete
+## Delete
 
 Delete records from `delete.csv`.
 
@@ -175,6 +175,8 @@ system dataloader.process_cmd('p05')  # Run dataloader
 ```
 
 # Links
+
+This project is available: https://rubygems.org/gems/use_salesforce_dataloader and https://github.com/hnagoya/use_salesforce_dataloader
 
 This project forked from: https://github.com/sthiyaga/dataloader
 

@@ -88,6 +88,7 @@ class UseSalesforceDataLoader
   end
 
   # @note
+  #
   #   Original:
   #
   #   dataloader/bin/process.sh
@@ -142,6 +143,7 @@ class UseSalesforceDataLoader
   end
 
   # @note
+  #
   #   Original:
   #
   #   dataloader/bin/encrypt.sh

@@ -87,9 +87,12 @@ class UseSalesforceDataLoader
     @process = "#{j} -Dsalesforce.config.dir=%s com.salesforce.dataloader.process.ProcessRunner process.name=%s"
   end
 
-  # @note Original:<br>
-  #   dataloader/bin/process.sh<br>
-  #   Usage: dataloader/bin/process.sh [conf-dir] <process-name><br>
+  # @note
+  #   Original:
+  #
+  #   dataloader/bin/process.sh
+  #
+  #   Usage: dataloader/bin/process.sh [conf-dir] <process-name>
   #
   # Return command line string for execute dataloader by named process.
   # @param name [String]
@@ -138,14 +141,22 @@ class UseSalesforceDataLoader
                             entries_xml]
   end
 
-  # @note Original:<br>
-  #   dataloader/bin/encrypt.sh<br>
-  #   Usage: dataloader/bin/encrypt.sh<br>
-  #   Utility to encrypt a string based on a static or a provided key<br>
-  #   Options (mutually exclusive - use one at a time):<br>
-  #   -g <seed text> Generate key based on seed<br>
-  #   -v <encrypted> <decrypted value> [Path to Key] Validate whether decryption of encrypted value matches the decrypted value, optionally provide key file<br>
-  #   -e <plain text> [Path to Key]                  Encrypt a plain text value, optionally provide key file (generate key using option -g)<br>
+  # @note
+  #   Original:
+  #
+  #   dataloader/bin/encrypt.sh
+  #
+  #   Usage: dataloader/bin/encrypt.sh
+  #
+  #   Utility to encrypt a string based on a static or a provided key
+  #
+  #   Options (mutually exclusive - use one at a time):
+  #
+  #   -g <seed text> Generate key based on seed
+  #
+  #   -v <encrypted> <decrypted value> [Path to Key] Validate whether decryption of encrypted value matches the decrypted value, optionally provide key file
+  #
+  #   -e <plain text> [Path to Key]                  Encrypt a plain text value, optionally provide key file (generate key using option -g)
   #
   # internal use
   # @param [String] options

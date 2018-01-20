@@ -1,3 +1,5 @@
+.yardoc
+doc/*
 tmp/*
 test/*
 !test/Rakefile

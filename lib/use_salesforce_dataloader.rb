@@ -263,7 +263,7 @@ ENTRIES_XML
     'sfdc.extractionRequestSize'        => nil,
     'sfdc.extractionSOQL'               => nil,
     'sfdc.insertNulls'                  => 'true',
-    'sfdc.loadBatchSize'                => nil,
+    'sfdc.loadBatchSize'                => nil, # recommended value? -> 200(Not Bulk API) / 2000(Bulk API)
     'sfdc.maxRetries'                   => nil,
     'sfdc.minRetrySleepSecs'            => nil,
     'sfdc.noCompression'                => nil,

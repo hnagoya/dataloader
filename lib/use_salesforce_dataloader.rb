@@ -9,7 +9,7 @@ require 'open3'
 #   - <tt>map.sdl</tt>
 #
 class UseSalesforceDataLoader
-  VERSION = '0.0.7'
+  VERSION = '0.0.8'
 
   # Setter for <tt>@conf_dir</tt>, set values <tt>@conf_key_file</tt>, <tt>@conf_process_xml_file</tt> and <tt>@conf_map_file</tt> at the same time.
   def conf_dir=(path)

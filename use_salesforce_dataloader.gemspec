@@ -1,3 +1,5 @@
+require './lib/use_salesforce_dataloader'
+
 Gem::Specification.new do |s|
   s.name        = 'use_salesforce_dataloader'
   s.version     = UseSalesforceDataLoader::VERSION
@@ -7,5 +9,5 @@ Gem::Specification.new do |s|
   s.email       = 'hnagoya@gmail.com'
   s.files       = ['lib/use_salesforce_dataloader.rb']
   s.homepage    = 'https://rubygems.org/gems/use_salesforce_dataloader'
-  s.license     = 'Apache 2.0'
+  s.license     = 'Apache-2.0'
 end

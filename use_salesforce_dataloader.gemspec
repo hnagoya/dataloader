@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'use_salesforce_dataloader'
   s.version     = UseSalesforceDataLoader::VERSION
-  s.date        = '2018-01-19'
+  s.date        = '2018-03-20'
   s.summary     = 'Force.com Apex Data Loader for Ruby/Linux - command line version'
   s.authors     = ['Hiroaki Nagoya']
   s.email       = 'hnagoya@gmail.com'

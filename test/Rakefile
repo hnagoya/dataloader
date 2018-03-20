@@ -7,7 +7,7 @@ require '../lib/use_salesforce_dataloader'
 
 java = "#{`which java`.chomp}"
 java_opt = '-Dfile.encoding=UTF-8'
-jar = '../lib/dataloader-41.0.0-uber.jar' # must ASCII only path string
+jar = '../lib/dataloader-42.0.0-uber.jar' # must ASCII only path string
 c = UseSalesforceDataLoader.new(jar, java, java_opt)
 y = YAML.load_file('./secret.yml') # Not included in this repo.
 c.endpoint = y['endpoint']
@@ -15,9 +15,9 @@ c.username = y['username']
 c.password = y['password']
 c.conf_dir = '.'
 
-namespace :test do
+namespace :test_e do
   desc 'encrypt test 01'
-  task :e01 do
+  task '01' do
     k = c.encrypt('-g 0123456789')
     f = './key.txt'
     open(f, 'w:UTF-8') do |o|
@@ -30,7 +30,7 @@ namespace :test do
   end
 
   desc 'ecnrypt test 02'
-  task :e02 do
+  task '02' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     p1 = 'abcde!f$g%h#i?jklmn'
@@ -38,9 +38,11 @@ namespace :test do
     p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
     pp [p1, p2, p3]
   end
+end
 
+namespace :test_p do
   desc 'process test 01'
-  task :p01 do
+  task '01' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     c.bean_id = 'p01'
@@ -61,7 +63,7 @@ namespace :test do
   end
 
   desc 'process test 02 extract'
-  task :p02 do
+  task '02' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     c.bean_id = 'p02'
@@ -85,7 +87,7 @@ namespace :test do
   end
 
   desc 'process test 03 insert'
-  task :p03 do
+  task '03' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     c.bean_id = 'p03'
@@ -125,7 +127,7 @@ namespace :test do
   end
 
   desc 'process test 04 upsert'
-  task :p04 do
+  task '04' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     c.bean_id = 'p04'
@@ -160,7 +162,7 @@ namespace :test do
   end
 
   desc 'process test 05 delete'
-  task :p05 do
+  task '05' do
     c.conf_dir = '.'
     f = c.save_conf_key_file
     c.bean_id = 'p05'

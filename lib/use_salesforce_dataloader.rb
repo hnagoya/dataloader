@@ -137,7 +137,7 @@ class UseSalesforceDataLoader
       .join
       .chomp
     PROCESS_XML_TEMPLATE % [@bean_id,
-                            @bean_descrption,
+                            @bean_description,
                             @property_name,
                             entries_xml]
   end

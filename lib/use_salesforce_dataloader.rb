@@ -76,9 +76,10 @@ class UseSalesforceDataLoader
   # @param java [String] path of java runtime.
   # @param java_opt [String] command line option for java runtime.
   # @example
-  #   UseSalesforceDataLoader.new('/usr/lib/dataloader-41.0.0-uber.jar', '/usr/bin/java', '-Dfile.encoding=UTF-8')
+  #   UseSalesforceDataLoader.new('/usr/lib/dataloader-42.0.0-uber.jar', '/usr/bin/java', '-Dfile.encoding=UTF-8')
   #
-  def initialize(jar, java = nil, java_opt = nil)
+  def initialize(jar, java = nil, java_opt = nil, dataloader_major_version: 42)
+    @dataloader_major_version = dataloader_major_version
     java = exec_command('which java') unless java
     path_check(java)
     path_check(jar)
@@ -108,11 +109,14 @@ class UseSalesforceDataLoader
   # @see #conf_key_file
   # @return [String] conf_key_file
   def save_conf_key_file
-    @conf_key_file.tap do |f|
-      open(f, 'w:UTF-8') do |o|
+    if @dataloader_major_version < 43
+      open(@conf_key_file, 'w:UTF-8') do |o|
         o.print encrypt("-g #{text_seed}")
       end
+    else
+      encrypt("-k '#{@conf_key_file}'")
     end
+    @conf_key_file
   end
 
   # Save conf xml file
@@ -144,27 +148,31 @@ class UseSalesforceDataLoader
 
   # @note
   #
-  #   Original:
+  # ref. https://github.com/forcedotcom/dataloader/commit/dda55319ebf741b3fc3e2baf45d49b82e598f2fa#diff-8943e367622f270c051690266c3b9d44
   #
-  #   dataloader/bin/encrypt.sh
+  # $ java -cp ./lib/dataloader-43.0.0-uber.jar com.salesforce.dataloader.security.EncryptionUtil
+  # Utility to encrypt a string based on a static or a provided key
+  # Options (mutually exclusive - use one at a time):
+  # -e <plain text> <Path to keyfile>                Encrypt a plain text value, keyfile path
+  # -d <encryptText> <Path to keyfile>               Decrypt an encrypted text back to plain text value using keyfile
+  # -k [Path to Keyfile]                             Generate keyfile with optional keyfile path
   #
-  #   Usage: dataloader/bin/encrypt.sh
-  #
-  #   Utility to encrypt a string based on a static or a provided key
-  #
-  #   Options (mutually exclusive - use one at a time):
-  #
-  #   -g <seed text> Generate key based on seed
-  #
-  #   -v <encrypted> <decrypted value> [Path to Key] Validate whether decryption of encrypted value matches the decrypted value, optionally provide key file
-  #
-  #   -e <plain text> [Path to Key]                  Encrypt a plain text value, optionally provide key file (generate key using option -g)
+  # $ java -cp ./lib/dataloader-42.0.0-uber.jar com.salesforce.dataloader.security.EncryptionUtil
+  # Utility to encrypt a string based on a static or a provided key
+  # Options (mutually exclusive - use one at a time):
+  # -g <seed text>                                 Generate key based on seed
+  # -v <encrypted> <decrypted value> [Path to Key] Validate whether decryption of encrypted value matches the decrypted value, optionally provide key file
+  # -e <plain text> [Path to Key]                  Encrypt a plain text value, optionally provide key file (generate key using option -g)
   #
   # internal use
   # @param [String] options
   # @return [String]
   def encrypt(options)
-    cmd = "#{@encrypt} #{options} | sed 's/^.*) \- //g'"
+    cmd = if @dataloader_major_version < 43
+            "#{@encrypt} #{options} | sed 's/^.*) \- //g'"
+          else
+            "#{@encrypt} #{options} | tail -1"
+          end
     exec_command(cmd)
   end
 
@@ -230,6 +238,7 @@ PROCESS_XML
 ENTRIES_XML
           
   # @note internal use
+  # ref. https://developer.salesforce.com/docs/atlas.en-us.dataLoader.meta/dataLoader/loader_params.htm
   BASE_ENTRIES = {
     'dataAccess.readUTF8'               => 'true',
     'dataAccess.writeUTF8'              => 'true',

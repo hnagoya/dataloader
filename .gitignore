@@ -2,6 +2,6 @@
 doc/*
 tmp/*
 test/*
-!test/Rakefile
+!test/Rakefile*
 !test/secret_sample.yml
 !.gitkeep

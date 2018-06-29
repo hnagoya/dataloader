@@ -1,0 +1,353 @@
+# -*- coding: utf-8 -*-
+require 'pathname'
+require 'csv'
+require 'yaml'
+require 'pp'
+require '../lib/use_salesforce_dataloader'
+
+java = "#{`which java`.chomp}"
+java_opt = '-Dfile.encoding=UTF-8'
+jar = '../lib/dataloader-42.0.0-uber.jar' # must ASCII only path string
+c = UseSalesforceDataLoader.new(jar, java, java_opt)
+y = YAML.load_file('./secret.yml') # Not included in this repo.
+c.endpoint = y['endpoint']
+c.username = y['username']
+c.password = y['password']
+c.conf_dir = '.'
+
+namespace :test do
+  desc 'encrypt test 01'
+  task :e01 do
+    k = c.encrypt('-g 0123456789')
+    f = './key.txt'
+    open(f, 'w:UTF-8') do |o|
+      o.puts k
+    end
+    p1 = 'abcde!f$g%h#i?jklmn'
+    p2 = c.encrypt("-e '#{p1}' #{f}")
+    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    pp [p1, p2, p3]
+  end
+
+  desc 'ecnrypt test 02'
+  task :e02 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    p1 = 'abcde!f$g%h#i?jklmn'
+    p2 = c.encrypt("-e '#{p1}' #{f}")
+    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    pp [p1, p2, p3]
+  end
+end
+
+namespace :test do
+  desc 'process test 01'
+  task :p01 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p01'
+    c.bean_description = 'do p01'
+    c.property_name = 'p01'
+    c.overwrite_entries = {
+      'process.name' => 'p01',
+      'process.mappingFile' => nil,
+      'sfdc.entity' => 'User',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name from User',
+      'dataAccess.name' => 'extract_User.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+  end
+
+  desc 'process test 02 extract'
+  task :p02 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p02'
+    c.bean_description = 'do p02 extract'
+    c.property_name = 'p02'
+    c.overwrite_entries = {
+      'process.name' => 'p02',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
+      'dataAccess.name' => 'extract_Account.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.mappingFile' => nil,
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'false',
+    }
+    c.save_conf_process_xml_file
+    cmd = c.process_cmd('p02')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 03 insert'
+  task :p03 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p03'
+    c.bean_description = 'do p03 insert'
+    c.property_name = 'p03'
+    c.overwrite_entries = {
+      'process.name' => 'p03',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'insert',
+      'dataAccess.name' => './insert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './insert_result.csv',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+    open('./insert.csv', 'w:UTF-8') do |o|
+      [['name', 'account_number', 'location'],
+       ['James T. Kirk',     'ac-000', 'SPACE'],
+       ['Spock Vulcan',      'ac-001', 'SPACE'],
+       ['Dr. Leonard McCoy', 'ac-002', 'SPACE'],
+       ['Montgomery Scott',  'ac-003', 'SPACE'],
+       ['Nyota Uhura',       'ac-004', 'SPACE'],
+       ['Hikaru Sulu',       'ac-005', 'SPACE'],
+       ['織田 信長',         'ac-006', 'SPACE'], # Japanese Character String
+      ].each do |v|
+        o.print v.to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'name=Name'
+      o.puts 'account_number=AccountNumber'
+      o.puts 'location=BillingState'
+    end
+    cmd = c.process_cmd('p03')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 04 upsert'
+  task :p04 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p04'
+    c.bean_description = 'do p04 upsert'
+    c.property_name = 'p04'
+    c.overwrite_entries = {
+      'process.name' => 'p04',
+      'sfdc.entity' => 'Account',
+      'sfdc.externalIdField' => 'Id',
+      'process.operation' =>  'upsert',
+      'dataAccess.name' => './upsert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './upsert_result.csv',
+      'sfdc.debugMessages' => 'false',
+    }
+    c.save_conf_process_xml_file
+    open('./upsert.csv', 'w:UTF-8') do |o|
+      o.print %w[Id update_name].to_csv
+      CSV.foreach('./insert_result.csv', encoding: 'UTF-8', headers: :first_row) do |r|
+        i = r['ID']
+        n = '[UPDATE] ' + r['NAME']
+        o.print [i, n].to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'Id=Id'
+      o.puts 'update_name=Name'
+    end
+    cmd = c.process_cmd('p04')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'process test 05 delete'
+  task :p05 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'p05'
+    c.bean_description = 'do p05 delete'
+    c.property_name = 'p05'
+    c.overwrite_entries = {
+      'process.name' => 'p05',
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'delete',
+      'dataAccess.name' => './insert_result.csv',
+      'dataAccess.type' => 'csvRead',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'ID=Id'
+    end
+    cmd = c.process_cmd('p05')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+end
+
+namespace :test do
+  desc 'bulk api process test 01'
+  task :b01 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'b01'
+    c.bean_description = 'do b01'
+    c.property_name = 'b01'
+    c.overwrite_entries = {
+      'process.name' => 'b01',
+      'process.mappingFile' => nil,
+      'sfdc.useBulkApi' => 'true',
+      'sfdc.loadBatchSize' => 2000,
+      'sfdc.entity' => 'User',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name from User',
+      'dataAccess.name' => 'extract_User.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+  end
+
+  desc 'bulk api process test 02 extract'
+  task :b02 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'b02'
+    c.bean_description = 'do b02 extract'
+    c.property_name = 'b02'
+    c.overwrite_entries = {
+      'process.name' => 'b02',
+      'sfdc.useBulkApi' => 'true',
+      'sfdc.loadBatchSize' => 2000,
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'extract',
+      'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
+      'dataAccess.name' => 'extract_Account.csv',
+      'dataAccess.type' => 'csvWrite',
+      'process.mappingFile' => nil,
+      'process.enableExtractStatusOutput' => 'false',
+      'sfdc.debugMessages' => 'false',
+    }
+    c.save_conf_process_xml_file
+    cmd = c.process_cmd('b02')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'bulk api process test 03 insert'
+  task :b03 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'b03'
+    c.bean_description = 'do b03 insert'
+    c.property_name = 'b03'
+    c.overwrite_entries = {
+      'process.name' => 'b03',
+      'sfdc.useBulkApi' => 'true',
+      'sfdc.loadBatchSize' => 2000,
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'insert',
+      'dataAccess.name' => './insert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './insert_result.csv',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+    open('./insert.csv', 'w:UTF-8') do |o|
+      [['name', 'account_number', 'location'],
+       ['James T. Kirk',     'ac-000', 'SPACE'],
+       ['Spock Vulcan',      'ac-001', 'SPACE'],
+       ['Dr. Leonard McCoy', 'ac-002', 'SPACE'],
+       ['Montgomery Scott',  'ac-003', 'SPACE'],
+       ['Nyota Uhura',       'ac-004', 'SPACE'],
+       ['Hikaru Sulu',       'ac-005', 'SPACE'],
+       ['織田 信長',         'ac-006', 'SPACE'], # Japanese Character String
+      ].each do |v|
+        o.print v.to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'name=Name'
+      o.puts 'account_number=AccountNumber'
+      o.puts 'location=BillingState'
+    end
+    cmd = c.process_cmd('b03')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'bulk api process test 04 upsert'
+  task :b04 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'b04'
+    c.bean_description = 'do b04 upsert'
+    c.property_name = 'b04'
+    c.overwrite_entries = {
+      'process.name' => 'b04',
+      'sfdc.useBulkApi' => 'true',
+      'sfdc.loadBatchSize' => 2000,
+      'sfdc.entity' => 'Account',
+      'sfdc.externalIdField' => 'Id',
+      'process.operation' =>  'upsert',
+      'dataAccess.name' => './upsert.csv',
+      'dataAccess.type' => 'csvRead',
+      'process.outputSuccess' => './upsert_result.csv',
+      'sfdc.debugMessages' => 'false',
+    }
+    c.save_conf_process_xml_file
+    open('./upsert.csv', 'w:UTF-8') do |o|
+      o.print %w[Id update_name].to_csv
+      CSV.foreach('./insert_result.csv', encoding: 'UTF-8', headers: :first_row) do |r|
+        i = r['ID']
+        n = '[UPDATE] ' + r['NAME']
+        o.print [i, n].to_csv
+      end
+    end
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'Id=Id'
+      o.puts 'update_name=Name'
+    end
+    cmd = c.process_cmd('b04')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+
+  desc 'bulk api process test 05 delete'
+  task :b05 do
+    c.conf_dir = '.'
+    f = c.save_conf_key_file
+    c.bean_id = 'b05'
+    c.bean_description = 'do b05 delete'
+    c.property_name = 'b05'
+    c.overwrite_entries = {
+      'process.name' => 'b05',
+      'sfdc.useBulkApi' => 'true',
+      'sfdc.loadBatchSize' => 2000,
+      'sfdc.entity' => 'Account',
+      'process.operation' =>  'delete',
+      'dataAccess.name' => './insert_result.csv',
+      'dataAccess.type' => 'csvRead',
+      'sfdc.debugMessages' => 'true',
+    }
+    c.save_conf_process_xml_file
+    open(c.conf_map_file, 'w:UTF-8') do |o|
+      o.puts 'ID=Id'
+    end
+    cmd = c.process_cmd('b05')
+    cmd += ' 2>&1 |tee log.txt'
+    sh cmd
+  end
+end
+
+desc 'clean'
+task :clean do
+  Pathname('.')
+    .children
+    .select{|f| /\A(?:Rakefile_for_v4[23]|secret.*\.yml)\z/ !~ f.basename.to_s}
+    .each do |f|
+    f.unlink
+  end
+end

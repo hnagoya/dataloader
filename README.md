@@ -8,7 +8,7 @@ Force.com Apex Data Loader for Ruby/Linux - command line version
 1. Java 8+
 
 2. DataLoader JAR file from Windows or built from the open source project. 
-The current name/version of the jar file is `dataloader-42.0.0-uber.jar`, which included in this repo.
+The current name/version of the jar files are `dataloader-42.0.0-uber.jar` or `dataloader-43.0.0-uber.jar`, which included in this repo.
 
 # Usage (example)
 
@@ -26,6 +26,8 @@ require 'use_salesforce_dataloader'
 
 jar = '/opt/dataloader-42.0.0-uber.jar'              # Depends on your local environment.
 dataloader = UseSalesforceDataLoader.new(jar)
+# If you use dataloader-43.0.0-uber.jar or later version, it must be set dataloader_major_version.
+# dataloader = UseSalesforceDataLoader.new(jar, dataloader_major_version: 43)
 dataloader.endpoint = 'https://login.salesforce.com' # Depends on your salesforce environment. 
 dataloader.username = 'foo@example.com'              # Depends on your salesforce environment.
 dataloader.password = '123456789'                    # Depends on your salesforce environment.

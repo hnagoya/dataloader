@@ -2,9 +2,10 @@
  2. Fixed gem version number, ex. <a.b.c>
  3. Update UseSalesforceDataLoader::VERSION, include git commit(s).
  4. Update gemspec file.
- 5. $ git commit ...
- 6. $ git tag a.b.c
- 7. $ git push --tags (to github repo)
- 8. $ gem build <*.gemspec>
- 9. $ gem push <*-a.b.c.gem> (to rubygem repo)
-10. $ mv <*-a.b.c.gem> tmp/ (optional)
+ 5. $ git add ...
+ 6. $ git commit ...
+ 7. $ git tag a.b.c
+ 8. $ git push --tags (to github repo)
+ 9. $ gem build <*.gemspec>
+10. $ gem push <*-a.b.c.gem> (to rubygem repo)
+11. $ mv <*-a.b.c.gem> tmp/ (optional)

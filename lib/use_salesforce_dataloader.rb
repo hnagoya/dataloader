@@ -9,7 +9,7 @@ require 'open3'
 #   - <tt>map.sdl</tt>
 #
 class UseSalesforceDataLoader
-  VERSION = '0.0.9'
+  VERSION = '0.0.10'
 
   # Setter for <tt>@conf_dir</tt>, set values <tt>@conf_key_file</tt>, <tt>@conf_process_xml_file</tt> and <tt>@conf_map_file</tt> at the same time.
   def conf_dir=(path)
@@ -85,7 +85,7 @@ class UseSalesforceDataLoader
     path_check(jar)
     j = [java, java_opt, '-cp', jar].compact.join(' ')
     @encrypt = "#{j} com.salesforce.dataloader.security.EncryptionUtil"
-    @process = "#{j} -Dsalesforce.config.dir=%s com.salesforce.dataloader.process.ProcessRunner process.name=%s"
+    @process = "#{j} -Dsalesforce.config.dir='%s' com.salesforce.dataloader.process.ProcessRunner process.name='%s'"
   end
 
   # @note

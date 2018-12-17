@@ -9,7 +9,7 @@ require 'open3'
 #   - <tt>map.sdl</tt>
 #
 class UseSalesforceDataLoader
-  VERSION = '0.0.10'
+  VERSION = '0.0.11'
 
   # Setter for <tt>@conf_dir</tt>, set values <tt>@conf_key_file</tt>, <tt>@conf_process_xml_file</tt> and <tt>@conf_map_file</tt> at the same time.
   def conf_dir=(path)
@@ -137,12 +137,12 @@ class UseSalesforceDataLoader
     entries.merge!(@overwrite_entries) if @overwrite_entries
     entries_xml = entries
       .select{|k, v| v}
-      .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v]}
+      .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v.encode(xml: :text)]}
       .join
       .chomp
-    PROCESS_XML_TEMPLATE % [@bean_id,
-                            @bean_description,
-                            @property_name,
+    PROCESS_XML_TEMPLATE % [@bean_id.encode(xml: :text),
+                            @bean_description.encode(xml: :text),
+                            @property_name.encode(xml: :text),
                             entries_xml]
   end
 

@@ -7,8 +7,8 @@ require '../lib/use_salesforce_dataloader'
 
 java = "#{`which java`.chomp}"
 java_opt = '-Dfile.encoding=UTF-8'
-jar = '../lib/dataloader-42.0.0-uber.jar' # must ASCII only path string
-c = UseSalesforceDataLoader.new(jar, java, java_opt)
+jar = '../lib/dataloader-45.0.0-uber.jar' # must ASCII only path string
+c = UseSalesforceDataLoader.new(jar, java, java_opt, dataloader_major_version: 45)
 y = YAML.load_file('./secret.yml') # Not included in this repo.
 c.endpoint = y['endpoint']
 c.username = y['username']
@@ -18,14 +18,11 @@ c.conf_dir = '.'
 namespace :test do
   desc 'encrypt test 01'
   task :e01 do
-    k = c.encrypt('-g 0123456789')
     f = './key.txt'
-    open(f, 'w:UTF-8') do |o|
-      o.puts k
-    end
+    c.encrypt("-k #{f}")
     p1 = 'abcde!f$g%h#i?jklmn'
     p2 = c.encrypt("-e '#{p1}' #{f}")
-    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    p3 = c.encrypt("-d '#{p2}' #{f}")
     pp [p1, p2, p3]
   end
 
@@ -35,7 +32,7 @@ namespace :test do
     f = c.save_conf_key_file
     p1 = 'abcde!f$g%h#i?jklmn'
     p2 = c.encrypt("-e '#{p1}' #{f}")
-    p3 = c.encrypt("-v '#{p2}' '#{p1}' #{f}")
+    p3 = c.encrypt("-d '#{p2}' #{f}")
     pp [p1, p2, p3]
   end
 end
@@ -54,7 +51,7 @@ namespace :test do
       'sfdc.entity' => 'User',
       'process.operation' =>  'extract',
       'sfdc.extractionSOQL' => 'select Id, Name from User',
-      'dataAccess.name' => 'extract_<>&User.csv',
+      'dataAccess.name' => 'extract_User.csv',
       'dataAccess.type' => 'csvWrite',
       'process.enableExtractStatusOutput' => 'false',
       'sfdc.debugMessages' => 'true',
@@ -74,7 +71,7 @@ namespace :test do
       'sfdc.entity' => 'Account',
       'process.operation' =>  'extract',
       'sfdc.extractionSOQL' => 'select Id, Name, AccountNumber from Account',
-      'dataAccess.name' => 'extract_<>&Account.csv',
+      'dataAccess.name' => 'extract_Account.csv',
       'dataAccess.type' => 'csvWrite',
       'process.mappingFile' => nil,
       'process.enableExtractStatusOutput' => 'false',

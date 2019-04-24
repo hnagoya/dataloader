@@ -343,7 +343,7 @@ desc 'clean'
 task :clean do
   Pathname('.')
     .children
-    .select{|f| /\A(?:Rakefile_for_v4[23]|secret.*\.yml)\z/ !~ f.basename.to_s}
+    .select{|f| /\A(?:Rakefile_for_v4[2-9]|secret.*\.yml)\z/ !~ f.basename.to_s}
     .each do |f|
     f.unlink
   end

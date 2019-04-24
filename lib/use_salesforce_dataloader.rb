@@ -137,12 +137,12 @@ class UseSalesforceDataLoader
     entries.merge!(@overwrite_entries) if @overwrite_entries
     entries_xml = entries
       .select{|k, v| v}
-      .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v.encode(xml: :text)]}
+      .map{|k, v| ENTRIES_XML_TEMPLATE % [k, v.to_s.encode(xml: :text)]}
       .join
       .chomp
-    PROCESS_XML_TEMPLATE % [@bean_id.encode(xml: :text),
-                            @bean_description.encode(xml: :text),
-                            @property_name.encode(xml: :text),
+    PROCESS_XML_TEMPLATE % [@bean_id.to_s.encode(xml: :text),
+                            @bean_description.to_s.encode(xml: :text),
+                            @property_name.to_s.encode(xml: :text),
                             entries_xml]
   end
 
